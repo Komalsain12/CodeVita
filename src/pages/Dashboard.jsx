@@ -1,44 +1,62 @@
-"use client"
-
-import { useState } from "react"
-import  FileUpload  from "../components/FileUpload"
-import { Flame, Star, Award, Crown } from "lucide-react"
+// src/pages/Dashboard.jsx
+import { useState } from "react";
+import FileUpload from "../components/FileUpload";
+import QuizGame from "../components/QuizGame";
+import { Flame, Star, Award, Crown } from "lucide-react";
 
 export default function Dashboard() {
-  const [username] = useState("codevita_user123")
-  const [prompt, setPrompt] = useState("")
+  const [username] = useState("codevita_user123");
+  // The 'quizData' state is removed as it's not needed.
+  const [gameLevels, setGameLevels] = useState([]);
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [showGame, setShowGame] = useState(false);
 
   // Fake user stats
-  const [xp] = useState(240)
-  const [rank] = useState("Bronze")
-  const [badges] = useState(3)
-  const [streak] = useState(5)
-
+  const [xp] = useState(240);
+  const [rank] = useState("Bronze");
+  const [badges] = useState(3);
+  const [streak] = useState(5);
+  
   // Fake leaderboard
   const leaderboard = [
     { name: "Alice", score: 400 },
     { name: "Bob", score: 350 },
     { name: "Charlie", score: 280 },
     { name: "You", score: 240 },
-  ]
+  ];
+
+  const handleDataProcessed = (data) => {
+    // The received data is used directly to set gameLevels.
+    setGameLevels(data.levels);
+    setShowGame(true);
+  };
+  
+  const handleLevelComplete = (isCorrect) => {
+    if (isCorrect) {
+      alert(`Congratulations! You passed level ${currentLevel}`);
+      setCurrentLevel(currentLevel + 1);
+    } else {
+      alert("Incorrect answer! Try again.");
+    }
+  };
 
   return (
     <div
-      className="min-h-screen bg-black text-gray-100 font-mono"
+      className="min-h-screen font-mono text-gray-100 bg-black"
       style={{
-        backgroundImage: "url('/bg.gif')", // put your GIF in public/bg.gif
+        backgroundImage: "url('/bg.gif')",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
       {/* Header */}
-      <header className="px-6 py-4 flex items-center bg-black/80 border-b border-gray-700">
+      <header className="flex items-center px-6 py-4 border-b border-gray-700 bg-black/80">
         <h1 className="text-2xl font-bold text-yellow-400">CodeVita</h1>
       </header>
 
       {/* Welcome Bar */}
-      <div className="max-w-5xl mx-auto mt-6 px-4">
-        <div className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 shadow-md inline-block">
+      <div className="max-w-5xl px-4 mx-auto mt-6">
+        <div className="inline-block px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg shadow-md">
           <p className="text-gray-200">
             Welcome back, <span className="text-cyan-400">@{username}</span>! Let’s get it. 🚀
           </p>
@@ -46,50 +64,37 @@ export default function Dashboard() {
       </div>
 
       {/* Main Grid */}
-      <main className="max-w-5xl mx-auto mt-8 px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Left Section (Upload + Prompt) */}
-        <div className="md:col-span-2 space-y-6">
-          {/* Upload */}
-          <div className="bg-gray-900/90 border border-gray-700 rounded-xl p-6 shadow-lg">
-            <h2 className="text-lg font-bold mb-4 text-cyan-400">Upload & Prompt</h2>
-            <FileUpload onDataProcessed={() => {}} />
-
-            {/* Prompt Box */}
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Tell AI what to do (e.g., Analyze student performance...)"
-              className="w-full mt-4 p-3 rounded-lg bg-gray-800 border border-gray-600 text-gray-100 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-              rows={3}
+      <main className="grid max-w-5xl grid-cols-1 gap-6 px-4 mx-auto mt-8 md:grid-cols-3">
+        {/* Left Section (Unified Upload & Prompt) */}
+        <div className="space-y-6 md:col-span-2">
+          {showGame ? (
+            <QuizGame
+              levels={gameLevels}
+              currentLevel={currentLevel}
+              onLevelComplete={handleLevelComplete}
             />
-            <button
-              className="mt-3 px-5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg"
-              onClick={() => {
-                if (prompt.trim()) {
-                  alert(`AI will process: ${prompt}`)
-                  setPrompt("")
-                }
-              }}
-            >
-              Submit Prompt
-            </button>
-          </div>
+          ) : (
+            <div className="p-6 border border-gray-700 shadow-lg bg-gray-900/90 rounded-xl">
+              <h2 className="mb-4 text-lg font-bold text-cyan-400">Upload & Prompt</h2>
+              <FileUpload 
+                onDataProcessed={handleDataProcessed}
+              />
+            </div>
+          )}
         </div>
 
         {/* Right Section (Achievements + Leaderboard) */}
         <div className="space-y-6">
-          {/* Achievements */}
-          <div className="bg-gray-900/90 border border-gray-700 rounded-xl p-6 shadow-lg">
-            <h2 className="text-lg font-bold mb-4 text-cyan-400">Achievements</h2>
-            <p className="mb-2"><Star className="inline h-5 w-5 text-yellow-400 mr-2" /> Total XP: {xp}</p>
-            <p className="mb-2"><Crown className="inline h-5 w-5 text-purple-400 mr-2" /> Rank: {rank}</p>
-            <p className="mb-2"><Award className="inline h-5 w-5 text-cyan-400 mr-2" /> Badges: {badges}</p>
-            <p><Flame className="inline h-5 w-5 text-orange-500 mr-2" /> Day Streak: {streak} 🔥</p>
+          <div className="p-6 border border-gray-700 shadow-lg bg-gray-900/90 rounded-xl">
+            <h2 className="mb-4 text-lg font-bold text-cyan-400">Achievements</h2>
+            <p className="mb-2"><Star className="inline w-5 h-5 mr-2 text-yellow-400" /> Total XP: {xp}</p>
+            <p className="mb-2"><Crown className="inline w-5 h-5 mr-2 text-purple-400" /> Rank: {rank}</p>
+            <p className="mb-2"><Award className="inline w-5 h-5 mr-2 text-cyan-400" /> Badges: {badges}</p>
+            <p><Flame className="inline w-5 h-5 mr-2 text-orange-500" /> Day Streak: {streak} 🔥</p>
           </div>
 
-          {/* Leaderboard */}
-          <div className="bg-gray-900/90 border border-gray-700 rounded-xl p-6 shadow-lg">
-            <h2 className="text-lg font-bold mb-4 text-cyan-400">Leaderboard</h2>
+          <div className="p-6 border border-gray-700 shadow-lg bg-gray-900/90 rounded-xl">
+            <h2 className="mb-4 text-lg font-bold text-cyan-400">Leaderboard</h2>
             <ul className="space-y-2">
               {leaderboard.map((user, i) => (
                 <li key={i} className="flex justify-between text-sm text-gray-200">
@@ -102,5 +107,5 @@ export default function Dashboard() {
         </div>
       </main>
     </div>
-  )
+  );
 }
